@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import QuestionCard from '@/components/QuestionCard';
-import { getRandomQuestion, Question } from '@/lib/supabase';
+import { getRandomQuestion, Question, getTotalQuestions } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 
 export default function MainPage() {
@@ -12,10 +12,23 @@ export default function MainPage() {
   const [topic, setTopic] = useState<string>('');
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentQuestionNumber, setCurrentQuestionNumber] = useState(1);
+  const [totalQuestions, setTotalQuestions] = useState(0);
 
   useEffect(() => {
     setTopic(searchParams?.get('topic') || '');
   }, [searchParams]);
+
+  useEffect(() => {
+    if (topic) {
+      const loadTotalQuestions = async () => {
+        const total = await getTotalQuestions(topic);
+        setTotalQuestions(total);
+      };
+      loadTotalQuestions();
+      fetchNewQuestion();
+    }
+  }, [topic]);
 
   const fetchNewQuestion = async () => {
     setLoading(true);
@@ -24,11 +37,15 @@ export default function MainPage() {
     setLoading(false);
   };
 
-  useEffect(() => {
-    if (topic) {
-      fetchNewQuestion();
-    }
-  }, [topic]);
+  const handleNext = () => {
+    setCurrentQuestionNumber(prev => prev + 1);
+    fetchNewQuestion();
+  };
+
+  const handlePass = () => {
+    setCurrentQuestionNumber(prev => prev + 1);
+    fetchNewQuestion();
+  };
 
   if (!topic) {
     return (
@@ -92,8 +109,10 @@ export default function MainPage() {
         ) : currentQuestion ? (
           <QuestionCard
             question={currentQuestion}
-            onNext={fetchNewQuestion}
-            onPass={fetchNewQuestion}
+            onNext={handleNext}
+            onPass={handlePass}
+            currentQuestion={currentQuestionNumber}
+            totalQuestions={totalQuestions}
           />
         ) : (
           <div className="text-center">

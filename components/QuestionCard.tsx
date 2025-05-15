@@ -3,14 +3,23 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { Question } from '@/lib/supabase';
+import ProgressBar from './ProgressBar';
 
 interface QuestionCardProps {
   question: Question;
   onNext: () => void;
   onPass: () => void;
+  currentQuestion: number;
+  totalQuestions: number;
 }
 
-export default function QuestionCard({ question, onNext, onPass }: QuestionCardProps) {
+export default function QuestionCard({ 
+  question, 
+  onNext, 
+  onPass, 
+  currentQuestion,
+  totalQuestions 
+}: QuestionCardProps) {
   const [showPassModal, setShowPassModal] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
 
@@ -50,6 +59,11 @@ export default function QuestionCard({ question, onNext, onPass }: QuestionCardP
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.1 }}
           >
+            <ProgressBar 
+              current={currentQuestion} 
+              total={totalQuestions} 
+            />
+            
             <h2 className="text-2xl md:text-3xl font-medium text-gray-800 text-center mb-8">
               {question.question}
             </h2>

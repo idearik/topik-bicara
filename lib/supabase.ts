@@ -38,6 +38,25 @@ function resetShownQuestions(topic: string) {
   localStorage.removeItem(`${SHOWN_QUESTIONS_KEY}_${topic}`);
 }
 
+export async function getTotalQuestions(topic: string): Promise<number> {
+  try {
+    const { count, error } = await supabase
+      .from('questions')
+      .select('*', { count: 'exact', head: true })
+      .eq('topic', topic);
+
+    if (error) {
+      console.error('Error getting total questions:', error);
+      return 0;
+    }
+
+    return count || 0;
+  } catch (e) {
+    console.error('Unexpected error getting total questions:', e);
+    return 0;
+  }
+}
+
 export async function getRandomQuestion(topic: string): Promise<Question | null> {
   try {
     console.log('Fetching question for topic:', topic);
