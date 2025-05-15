@@ -9,9 +9,13 @@ import { motion } from 'framer-motion';
 
 export default function MainPage() {
   const searchParams = useSearchParams();
-  const topic = searchParams?.get('topic') || '';
+  const [topic, setTopic] = useState<string>('');
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setTopic(searchParams?.get('topic') || '');
+  }, [searchParams]);
 
   const fetchNewQuestion = async () => {
     setLoading(true);
@@ -21,7 +25,9 @@ export default function MainPage() {
   };
 
   useEffect(() => {
-    fetchNewQuestion();
+    if (topic) {
+      fetchNewQuestion();
+    }
   }, [topic]);
 
   if (!topic) {
