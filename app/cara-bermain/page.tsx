@@ -1,5 +1,7 @@
+'use client';
+
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const steps = [
   {
