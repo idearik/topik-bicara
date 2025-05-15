@@ -6,9 +6,16 @@ import Link from 'next/link';
 interface TopicCardProps {
   topic: string;
   isHighlighted?: boolean;
+  highlightLabel?: string;
+  highlightEmoji?: string;
 }
 
-export default function TopicCard({ topic, isHighlighted = false }: TopicCardProps) {
+export default function TopicCard({ 
+  topic, 
+  isHighlighted = false,
+  highlightLabel = "✨ Topik Baru",
+  highlightEmoji = "✨"
+}: TopicCardProps) {
   return (
     <Link href={`/main?topic=${encodeURIComponent(topic)}`}>
       <motion.div
@@ -28,7 +35,7 @@ export default function TopicCard({ topic, isHighlighted = false }: TopicCardPro
           {topic}
           {isHighlighted && (
             <span className="block text-sm font-normal text-purple-600 mt-1">
-              ✨ Topik Baru
+              {highlightLabel}
             </span>
           )}
         </h2>

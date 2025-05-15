@@ -40,7 +40,9 @@ export default function Home() {
             <TopicCard 
               key={topic} 
               topic={topic} 
-              isHighlighted={topic === 'Kencan Pertama'}
+              isHighlighted={topic === 'Kencan Pertama' || topic === 'Diri Sendiri'}
+              highlightLabel={topic === 'Kencan Pertama' ? '✨ Topik Baru' : '🔥 Populer'}
+              highlightEmoji={topic === 'Kencan Pertama' ? '✨' : '🔥'}
             />
           ))}
         </div>
