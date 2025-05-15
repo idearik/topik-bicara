@@ -16,11 +16,11 @@ export default function Home() {
       <div className="max-w-4xl mx-auto">
         <Link href="/" className="block text-center hover:opacity-80 transition-opacity">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-            Topik Bicara
+            #JawabJujur
           </h1>
         </Link>
         <p className="text-xl text-center text-gray-600 mb-12">
-          Pilih topik untuk memulai percakapan yang bermakna
+          Buka obrolan. Buka hati.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -52,7 +52,7 @@ export default function MainPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-              Topik Bicara
+              #JawabJujur
             </h1>
           </Link>
           <motion.h2
