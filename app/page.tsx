@@ -2,6 +2,7 @@ import TopicCard from '@/components/TopicCard';
 import Link from 'next/link';
 
 const topics = [
+  'Kencan Pertama',
   'Pacaran',
   'Pernikahan',
   'Persahabatan',
@@ -24,7 +25,11 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {topics.map((topic) => (
-            <TopicCard key={topic} topic={topic} />
+            <TopicCard 
+              key={topic} 
+              topic={topic} 
+              isHighlighted={topic === 'Kencan Pertama'}
+            />
           ))}
         </div>
       </div>

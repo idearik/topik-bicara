@@ -18,29 +18,30 @@ export type Question = {
   question: string;
 };
 
+const SHOWN_QUESTIONS_KEY = 'shown_questions';
+
+function getShownQuestions(topic: string): string[] {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(`${SHOWN_QUESTIONS_KEY}_${topic}`);
+  return stored ? JSON.parse(stored) : [];
+}
+
+function addShownQuestion(topic: string, questionId: string) {
+  if (typeof window === 'undefined') return;
+  const shown = getShownQuestions(topic);
+  shown.push(questionId);
+  localStorage.setItem(`${SHOWN_QUESTIONS_KEY}_${topic}`, JSON.stringify(shown));
+}
+
+function resetShownQuestions(topic: string) {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(`${SHOWN_QUESTIONS_KEY}_${topic}`);
+}
+
 export async function getRandomQuestion(topic: string): Promise<Question | null> {
   try {
     console.log('Fetching question for topic:', topic);
     
-    // Simple health check first
-    const { data: healthCheck, error: healthError } = await supabase
-      .from('questions')
-      .select('id')
-      .limit(1);
-
-    if (healthError) {
-      console.error('Connection health check failed:', {
-        message: healthError.message,
-        code: healthError.code,
-        details: healthError.details,
-        hint: healthError.hint
-      });
-      return null;
-    }
-
-    console.log('Health check passed, found records:', healthCheck?.length);
-
-    // Get all questions for the topic
     const { data, error } = await supabase
       .from('questions')
       .select('*')
@@ -62,9 +63,28 @@ export async function getRandomQuestion(topic: string): Promise<Question | null>
       return null;
     }
 
-    // Get a random question from the results
-    const randomIndex = Math.floor(Math.random() * data.length);
-    const randomQuestion = data[randomIndex];
+    // Get shown questions for this topic
+    const shownQuestions = getShownQuestions(topic);
+    
+    // Filter out questions that have been shown
+    const availableQuestions = data.filter(q => !shownQuestions.includes(q.id));
+    
+    // If all questions have been shown, reset the tracking and use all questions
+    if (availableQuestions.length === 0) {
+      console.log('All questions shown, resetting tracking for topic:', topic);
+      resetShownQuestions(topic);
+      const randomIndex = Math.floor(Math.random() * data.length);
+      const randomQuestion = data[randomIndex];
+      addShownQuestion(topic, randomQuestion.id);
+      return randomQuestion;
+    }
+    
+    // Get a random question from the available questions
+    const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+    const randomQuestion = availableQuestions[randomIndex];
+    
+    // Track this question as shown
+    addShownQuestion(topic, randomQuestion.id);
 
     console.log('Successfully fetched random question for topic:', topic);
     return randomQuestion;
