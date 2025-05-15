@@ -4,10 +4,13 @@ import Link from 'next/link';
 const topics = [
   'Kencan Pertama',
   'Pacaran',
+  'LDR',
   'Pernikahan',
   'Persahabatan',
   'Teman Kantor',
-  'Saudara Kandung'
+  'Saudara Kandung',
+  'Diri Sendiri',
+  'Tempat Nongkrong'
 ];
 
 export default function Home() {
