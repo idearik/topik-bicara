@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import QuestionCard from '@/components/QuestionCard';
 import { getRandomQuestion, Question } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 
-function MainContent() {
+export default function MainPage() {
   const searchParams = useSearchParams();
   const topic = searchParams?.get('topic') || '';
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
@@ -104,20 +104,5 @@ function MainContent() {
         )}
       </div>
     </main>
-  );
-}
-
-// Wrap the main content in Suspense
-export default function MainPage() {
-  return (
-    <Suspense 
-      fallback={
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-800" />
-        </div>
-      }
-    >
-      <MainContent />
-    </Suspense>
   );
 } 
