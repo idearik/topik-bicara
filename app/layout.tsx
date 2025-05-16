@@ -29,17 +29,30 @@ export default function RootLayout({
       <body className={inter.className}>
         {children}
         <footer className="py-8 text-center text-gray-600 text-sm">
-          <p>
-            © 2025 #JawabJujur. Project by{' '}
-            <a
-              href="https://idearik.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-purple-600 hover:text-purple-700 underline"
-            >
-              @idearik
-            </a>
-          </p>
+          <div className="space-y-2">
+            <p>
+              <a
+                href="https://saweria.co/jawabjujur"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-purple-600 hover:text-purple-700 underline inline-flex items-center"
+              >
+                <span className="mr-1">☕️</span>
+                Dukung via Saweria
+              </a>
+            </p>
+            <p>
+              © 2025 #JawabJujur. Project by{' '}
+              <a
+                href="https://idearik.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-purple-600 hover:text-purple-700 underline"
+              >
+                @idearik
+              </a>
+            </p>
+          </div>
         </footer>
         <Analytics />
       </body>
