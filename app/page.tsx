@@ -10,7 +10,10 @@ const topics = [
   'Teman Kantor',
   'Saudara Kandung',
   'Diri Sendiri',
-  'Tempat Nongkrong'
+  'Tempat Nongkrong',
+  'Masa Kecil',
+  'Quarter Life Crisis',
+  'Reuni Sekolah'
 ];
 
 export default function Home() {
@@ -40,9 +43,21 @@ export default function Home() {
             <TopicCard 
               key={topic} 
               topic={topic} 
-              isHighlighted={topic === 'Kencan Pertama' || topic === 'Diri Sendiri'}
-              highlightLabel={topic === 'Kencan Pertama' ? '✨ Topik Baru' : '🔥 Populer'}
-              highlightEmoji={topic === 'Kencan Pertama' ? '✨' : '🔥'}
+              isHighlighted={topic === 'Kencan Pertama' || topic === 'Diri Sendiri' || topic === 'Quarter Life Crisis'}
+              highlightLabel={
+                topic === 'Kencan Pertama' 
+                  ? '✨ Topik Baru' 
+                  : topic === 'Quarter Life Crisis'
+                    ? '🎯 Must Try'
+                    : '🔥 Populer'
+              }
+              highlightEmoji={
+                topic === 'Kencan Pertama'
+                  ? '✨'
+                  : topic === 'Quarter Life Crisis'
+                    ? '🎯'
+                    : '🔥'
+              }
             />
           ))}
         </div>
