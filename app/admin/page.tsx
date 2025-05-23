@@ -8,6 +8,7 @@ interface Submission {
   question: string;
   topic: string;
   created_at: string;
+  author_credit?: string | null;
 }
 
 export default function AdminPage() {
@@ -16,6 +17,7 @@ export default function AdminPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [actionInProgress, setActionInProgress] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -66,51 +68,69 @@ export default function AdminPage() {
 
   const handleApprove = async (submission: Submission) => {
     try {
+      setActionInProgress(submission.id);
+      setError('');
+
       // First, insert into questions table
       const { error: insertError } = await supabase
         .from('questions')
         .insert([
           {
             question: submission.question,
-            topic: submission.topic
+            topic: submission.topic,
+            is_user_submitted: true,
+            author_credit: submission.author_credit
           }
         ]);
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Error inserting into questions:', insertError);
+        throw new Error('Failed to add question');
+      }
 
-      // Then, update the submission as approved
-      const { error: updateError } = await supabase
+      // Then, delete from submissions table
+      const { error: deleteError } = await supabase
         .from('question_submissions')
-        .update({ 
-          approved: true,
-          reviewed_at: new Date().toISOString()
-        })
+        .delete()
         .eq('id', submission.id);
 
-      if (updateError) throw updateError;
+      if (deleteError) {
+        console.error('Error deleting submission:', deleteError);
+        throw new Error('Failed to delete submission');
+      }
 
       // Refresh the submissions list
-      fetchSubmissions();
+      await fetchSubmissions();
     } catch (err) {
       console.error('Error approving submission:', err);
       setError('Failed to approve submission');
+    } finally {
+      setActionInProgress(null);
     }
   };
 
   const handleReject = async (id: string) => {
     try {
+      setActionInProgress(id);
+      setError('');
+
       const { error } = await supabase
         .from('question_submissions')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting submission:', error);
+        throw error;
+      }
 
       // Refresh the submissions list
-      fetchSubmissions();
+      await fetchSubmissions();
     } catch (err) {
       console.error('Error rejecting submission:', err);
       setError('Failed to reject submission');
+    } finally {
+      setActionInProgress(null);
     }
   };
 
@@ -160,6 +180,12 @@ export default function AdminPage() {
             </button>
           </div>
 
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 text-red-800 rounded-md">
+              {error}
+            </div>
+          )}
+
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-800 mx-auto" />
@@ -181,6 +207,11 @@ export default function AdminPage() {
                       <p className="text-sm text-gray-500 mt-1">
                         Topic: {submission.topic}
                       </p>
+                      {submission.author_credit && (
+                        <p className="text-sm text-gray-500">
+                          Author: {submission.author_credit}
+                        </p>
+                      )}
                       <p className="text-sm text-gray-500">
                         Submitted: {new Date(submission.created_at).toLocaleString()}
                       </p>
@@ -188,15 +219,25 @@ export default function AdminPage() {
                     <div className="space-x-3">
                       <button
                         onClick={() => handleApprove(submission)}
-                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                        disabled={actionInProgress === submission.id}
+                        className={`px-4 py-2 text-white rounded-md transition-colors ${
+                          actionInProgress === submission.id
+                            ? 'bg-green-400 cursor-not-allowed'
+                            : 'bg-green-600 hover:bg-green-700'
+                        }`}
                       >
-                        Approve
+                        {actionInProgress === submission.id ? 'Processing...' : 'Approve'}
                       </button>
                       <button
                         onClick={() => handleReject(submission.id)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                        disabled={actionInProgress === submission.id}
+                        className={`px-4 py-2 text-white rounded-md transition-colors ${
+                          actionInProgress === submission.id
+                            ? 'bg-red-400 cursor-not-allowed'
+                            : 'bg-red-600 hover:bg-red-700'
+                        }`}
                       >
-                        Reject
+                        {actionInProgress === submission.id ? 'Processing...' : 'Reject'}
                       </button>
                     </div>
                   </div>

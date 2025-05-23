@@ -81,6 +81,9 @@ export default function QuestionCard({
                 {question.is_user_submitted && (
                   <div className="absolute -top-2 -right-2 bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full border border-purple-400">
                     ✨ User Submitted
+                    {question.author_credit && (
+                      <span className="ml-1">by {question.author_credit}</span>
+                    )}
                   </div>
                 )}
                 <h2 className="text-xl md:text-2xl font-semibold mb-8 text-gray-800">

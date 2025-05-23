@@ -17,6 +17,7 @@ export type Question = {
   topic: string;
   question: string;
   is_user_submitted?: boolean;
+  author_credit?: string | null;
 };
 
 const SHOWN_QUESTIONS_KEY = 'shown_questions';

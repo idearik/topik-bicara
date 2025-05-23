@@ -19,10 +19,12 @@ const topics = [
 ];
 
 const MAX_QUESTION_LENGTH = 150;
+const MAX_CREDIT_LENGTH = 50;
 
 export default function SubmitQuestionForm() {
   const [question, setQuestion] = useState('');
   const [topic, setTopic] = useState('');
+  const [authorCredit, setAuthorCredit] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -55,6 +57,11 @@ export default function SubmitQuestionForm() {
       return;
     }
 
+    if (authorCredit && authorCredit.length > MAX_CREDIT_LENGTH) {
+      setError(`Nama/handle tidak boleh lebih dari ${MAX_CREDIT_LENGTH} karakter`);
+      return;
+    }
+
     if (containsInappropriateWords(question)) {
       setError('Pertanyaan mengandung kata-kata yang tidak pantas');
       return;
@@ -69,7 +76,8 @@ export default function SubmitQuestionForm() {
           {
             question: question.trim(),
             topic,
-            approved: false
+            approved: false,
+            author_credit: authorCredit.trim() || null
           }
         ]);
 
@@ -78,6 +86,7 @@ export default function SubmitQuestionForm() {
       setShowSuccess(true);
       setQuestion('');
       setTopic('');
+      setAuthorCredit('');
       
       // Hide success message after 5 seconds
       setTimeout(() => {
@@ -104,7 +113,7 @@ export default function SubmitQuestionForm() {
             id="topic"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
             required
           >
             <option value="">Pilih Topik</option>
@@ -125,7 +134,7 @@ export default function SubmitQuestionForm() {
               id="question"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[100px]"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[100px] text-gray-900"
               placeholder="Tulis pertanyaanmu di sini..."
               maxLength={MAX_QUESTION_LENGTH}
               required
@@ -134,6 +143,29 @@ export default function SubmitQuestionForm() {
               {question.length}/{MAX_QUESTION_LENGTH}
             </div>
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="authorCredit" className="block text-sm font-medium text-gray-700 mb-2">
+            Nama/Handle Social Media (Opsional)
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              id="authorCredit"
+              value={authorCredit}
+              onChange={(e) => setAuthorCredit(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
+              placeholder="Contoh: @johndoe atau John D."
+              maxLength={MAX_CREDIT_LENGTH}
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+              {authorCredit.length}/{MAX_CREDIT_LENGTH}
+            </div>
+          </div>
+          <p className="mt-1 text-sm text-gray-500">
+            Jika diisi, namamu akan muncul sebagai kredit di pertanyaan yang kamu ajukan
+          </p>
         </div>
 
         {error && (
