@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, isAuthenticated } from '@/lib/supabase';
 
 interface Submission {
   id: string;
@@ -12,7 +12,7 @@ interface Submission {
 }
 
 export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthed, setIsAuthed] = useState(false);
   const [password, setPassword] = useState('');
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,10 +20,10 @@ export default function AdminPage() {
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthed) {
       fetchSubmissions();
     }
-  }, [isAuthenticated]);
+  }, [isAuthed]);
 
   const fetchSubmissions = async () => {
     try {
@@ -55,7 +55,14 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
-        setIsAuthenticated(true);
+        // Check if we're authenticated with Supabase
+        const isAuthd = await isAuthenticated();
+        if (!isAuthd) {
+          setError('Not authenticated with database. Please contact administrator.');
+          return;
+        }
+
+        setIsAuthed(true);
         setError('');
       } else {
         setError('Invalid password');
@@ -68,11 +75,18 @@ export default function AdminPage() {
 
   const handleApprove = async (submission: Submission) => {
     try {
+      // Check authentication before proceeding
+      const isAuthd = await isAuthenticated();
+      if (!isAuthd) {
+        setError('Not authenticated. Please refresh and log in again.');
+        return;
+      }
+
       setActionInProgress(submission.id);
       setError('');
 
       // First, insert into questions table
-      const { error: insertError } = await supabase
+      const { data: insertedQuestion, error: insertError } = await supabase
         .from('questions')
         .insert([
           {
@@ -81,11 +95,17 @@ export default function AdminPage() {
             is_user_submitted: true,
             author_credit: submission.author_credit
           }
-        ]);
+        ])
+        .select()
+        .single();
 
       if (insertError) {
         console.error('Error inserting into questions:', insertError);
-        throw new Error('Failed to add question');
+        throw new Error(insertError.message || 'Failed to add question');
+      }
+
+      if (!insertedQuestion) {
+        throw new Error('Failed to add question - no data returned');
       }
 
       // Then, delete from submissions table
@@ -96,14 +116,19 @@ export default function AdminPage() {
 
       if (deleteError) {
         console.error('Error deleting submission:', deleteError);
-        throw new Error('Failed to delete submission');
+        // Try to rollback the question insert
+        await supabase
+          .from('questions')
+          .delete()
+          .eq('id', insertedQuestion.id);
+        throw new Error(deleteError.message || 'Failed to delete submission');
       }
 
       // Refresh the submissions list
       await fetchSubmissions();
     } catch (err) {
       console.error('Error approving submission:', err);
-      setError('Failed to approve submission');
+      setError(err instanceof Error ? err.message : 'Failed to approve submission');
     } finally {
       setActionInProgress(null);
     }
@@ -111,6 +136,13 @@ export default function AdminPage() {
 
   const handleReject = async (id: string) => {
     try {
+      // Check authentication before proceeding
+      const isAuthd = await isAuthenticated();
+      if (!isAuthd) {
+        setError('Not authenticated. Please refresh and log in again.');
+        return;
+      }
+
       setActionInProgress(id);
       setError('');
 
@@ -128,13 +160,13 @@ export default function AdminPage() {
       await fetchSubmissions();
     } catch (err) {
       console.error('Error rejecting submission:', err);
-      setError('Failed to reject submission');
+      setError(err instanceof Error ? err.message : 'Failed to reject submission');
     } finally {
       setActionInProgress(null);
     }
   };
 
-  if (!isAuthenticated) {
+  if (!isAuthed) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
@@ -173,7 +205,7 @@ export default function AdminPage() {
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-gray-800">Question Submissions</h2>
             <button
-              onClick={() => setIsAuthenticated(false)}
+              onClick={() => setIsAuthed(false)}
               className="text-purple-600 hover:text-purple-700"
             >
               Logout

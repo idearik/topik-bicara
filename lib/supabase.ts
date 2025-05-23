@@ -10,7 +10,28 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Log the URL (but not the key for security)
 console.log('Initializing Supabase client with URL:', supabaseUrl);
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  },
+  db: {
+    schema: 'public'
+  }
+});
+
+// Helper function to check if user is authenticated
+export const isAuthenticated = async () => {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    return !!session;
+  } catch (err) {
+    console.error('Error checking authentication:', err);
+    return false;
+  }
+};
 
 export type Question = {
   id: string;
