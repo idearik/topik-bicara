@@ -16,6 +16,7 @@ export type Question = {
   id: string;
   topic: string;
   question: string;
+  is_user_submitted?: boolean;
 };
 
 const SHOWN_QUESTIONS_KEY = 'shown_questions';
@@ -61,10 +62,11 @@ export async function getRandomQuestion(topic: string): Promise<Question | null>
   try {
     console.log('Fetching question for topic:', topic);
     
-    const { data, error } = await supabase
+    const { data: userSubmittedData, error } = await supabase
       .from('questions')
-      .select('*')
-      .eq('topic', topic);
+      .select('*, question_submissions!inner(approved)')
+      .eq('topic', topic)
+      .eq('question_submissions.approved', true);
 
     if (error) {
       console.error('Error fetching questions:', {
@@ -77,23 +79,37 @@ export async function getRandomQuestion(topic: string): Promise<Question | null>
       return null;
     }
 
-    if (!data || data.length === 0) {
-      console.log('No questions found for topic:', topic);
-      return null;
+    let questions;
+    if (!userSubmittedData || userSubmittedData.length === 0) {
+      // Try fetching without the join to get non-user-submitted questions
+      const { data: regularData, error: regularError } = await supabase
+        .from('questions')
+        .select('*')
+        .eq('topic', topic);
+
+      if (regularError || !regularData || regularData.length === 0) {
+        console.log('No questions found for topic:', topic);
+        return null;
+      }
+
+      questions = regularData.map(q => ({ ...q, is_user_submitted: false }));
+    } else {
+      // Mark questions as user submitted
+      questions = userSubmittedData.map(q => ({ ...q, is_user_submitted: true }));
     }
 
     // Get shown questions for this topic
     const shownQuestions = getShownQuestions(topic);
     
     // Filter out questions that have been shown
-    const availableQuestions = data.filter(q => !shownQuestions.includes(q.id));
+    const availableQuestions = questions.filter(q => !shownQuestions.includes(q.id));
     
     // If all questions have been shown, reset the tracking and use all questions
     if (availableQuestions.length === 0) {
       console.log('All questions shown, resetting tracking for topic:', topic);
       resetShownQuestions(topic);
-      const randomIndex = Math.floor(Math.random() * data.length);
-      const randomQuestion = data[randomIndex];
+      const randomIndex = Math.floor(Math.random() * questions.length);
+      const randomQuestion = questions[randomIndex];
       addShownQuestion(topic, randomQuestion.id);
       return randomQuestion;
     }

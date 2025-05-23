@@ -20,119 +20,96 @@ export default function QuestionCard({
   currentQuestion,
   totalQuestions 
 }: QuestionCardProps) {
-  const [showPassModal, setShowPassModal] = useState(false);
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
 
-  const handleNext = () => {
-    setIsFlipped(true);
-    setTimeout(() => {
-      onNext();
-      setIsFlipped(false);
-    }, 400);
+  const handlePassClick = () => {
+    setShowConfirmPass(true);
+  };
+
+  const handleConfirmPass = () => {
+    setShowConfirmPass(false);
+    onPass();
+  };
+
+  const handleCancelPass = () => {
+    setShowConfirmPass(false);
   };
 
   return (
-    <>
-      <motion.div
-        key={question.id}
-        className="relative w-full max-w-2xl mx-auto perspective"
-        style={{ perspective: '1000px' }}
-      >
-        <motion.div
-          className="bg-white rounded-2xl shadow-xl p-8 w-full transform-style-3d"
-          initial={false}
-          animate={{
-            rotateY: isFlipped ? 180 : 0,
-            opacity: isFlipped ? 0 : 1,
-          }}
-          transition={{
-            duration: 0.4,
-            ease: "easeInOut"
-          }}
-          style={{
-            transformStyle: 'preserve-3d',
-            backfaceVisibility: 'hidden'
-          }}
-        >
+    <div className="perspective">
+      <AnimatePresence mode="wait">
+        {showConfirmPass ? (
           <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1 }}
+            key="confirm"
+            initial={{ rotateY: 180, opacity: 0 }}
+            animate={{ rotateY: 0, opacity: 1 }}
+            exit={{ rotateY: -180, opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="transform-style-3d backface-hidden"
           >
-            <ProgressBar 
-              current={currentQuestion} 
-              total={totalQuestions} 
-            />
-            
-            <h2 className="text-2xl md:text-3xl font-medium text-gray-800 text-center mb-8">
-              {question.question}
-            </h2>
-            
-            <div className="flex justify-center gap-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 bg-[#B5EAD7] text-gray-700 rounded-lg font-medium shadow-md hover:shadow-lg transition-shadow"
-                onClick={handleNext}
-              >
-                Pertanyaan Berikutnya
-              </motion.button>
-              
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 bg-[#FFB7B2] text-gray-700 rounded-lg font-medium shadow-md hover:shadow-lg transition-shadow"
-                onClick={() => setShowPassModal(true)}
-              >
-                Lewati
-              </motion.button>
+            <div className="bg-white p-8 rounded-xl shadow-lg text-center">
+              <h3 className="text-xl font-semibold mb-4 text-gray-800">
+                Yakin mau skip pertanyaan ini?
+              </h3>
+              <div className="space-x-4">
+                <button
+                  onClick={handleConfirmPass}
+                  className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  Ya, Skip
+                </button>
+                <button
+                  onClick={handleCancelPass}
+                  className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Tidak
+                </button>
+              </div>
             </div>
           </motion.div>
-        </motion.div>
-      </motion.div>
-
-      <AnimatePresence>
-        {showPassModal && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black"
-              onClick={() => setShowPassModal(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="fixed inset-0 flex items-center justify-center pointer-events-none"
-            >
-              <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 pointer-events-auto shadow-xl">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                  Apakah kamu yakin ingin melewati pertanyaan ini?
-                </h3>
-                <div className="flex justify-end gap-3">
-                  <button
-                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                    onClick={() => setShowPassModal(false)}
-                  >
-                    Batal
-                  </button>
-                  <button
-                    className="px-4 py-2 bg-[#FFB7B2] text-gray-700 rounded hover:bg-[#ffa19a] transition-colors shadow-md"
-                    onClick={() => {
-                      setShowPassModal(false);
-                      onPass();
-                    }}
-                  >
-                    Ya, Lewati
-                  </button>
-                </div>
+        ) : (
+          <motion.div
+            key="question"
+            initial={{ rotateY: -180, opacity: 0 }}
+            animate={{ rotateY: 0, opacity: 1 }}
+            exit={{ rotateY: 180, opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="transform-style-3d backface-hidden"
+          >
+            <div className="bg-white p-8 rounded-xl shadow-lg">
+              <div className="relative">
+                {question.is_user_submitted && (
+                  <div className="absolute -top-2 -right-2 bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full border border-purple-400">
+                    ✨ User Submitted
+                  </div>
+                )}
+                <h2 className="text-xl md:text-2xl font-semibold mb-8 text-gray-800">
+                  {question.question}
+                </h2>
               </div>
-            </motion.div>
-          </>
+
+              <div className="flex justify-between items-center mt-8">
+                <button
+                  onClick={handlePassClick}
+                  className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  Pass
+                </button>
+                <button
+                  onClick={onNext}
+                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+
+              <div className="mt-8">
+                <ProgressBar current={currentQuestion} total={totalQuestions} />
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 } 

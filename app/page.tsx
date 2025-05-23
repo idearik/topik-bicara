@@ -29,13 +29,22 @@ export default function Home() {
           <p className="text-xl text-gray-600 mb-4">
             Buka obrolan. Buka hati.
           </p>
-          <Link
-            href="/cara-bermain"
-            className="inline-flex items-center text-purple-600 hover:text-purple-700 text-sm"
-          >
-            <span className="mr-1">📖</span>
-            Cara Bermain
-          </Link>
+          <div className="space-x-6">
+            <Link
+              href="/cara-bermain"
+              className="inline-flex items-center text-purple-600 hover:text-purple-700 text-sm"
+            >
+              <span className="mr-1">📖</span>
+              Cara Bermain
+            </Link>
+            <Link
+              href="/submit"
+              className="inline-flex items-center text-purple-600 hover:text-purple-700 text-sm"
+            >
+              <span className="mr-1">✨</span>
+              Kirim Pertanyaan
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
