@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, adminSupabase } from '@/lib/supabase';
 
 interface Submission {
   id: string;
@@ -34,11 +34,15 @@ export default function AdminPage() {
   }, []);
 
   const fetchSubmissions = async () => {
+    if (!adminSupabase) {
+      setError('Admin client not configured');
+      return;
+    }
+
     try {
-      const { data, error } = await supabase
+      const { data, error } = await adminSupabase
         .from('question_submissions')
         .select('*')
-        .eq('approved', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -76,12 +80,17 @@ export default function AdminPage() {
   };
 
   const handleApprove = async (submission: Submission) => {
+    if (!adminSupabase) {
+      setError('Admin client not configured');
+      return;
+    }
+
     try {
       setActionInProgress(submission.id);
       setError('');
 
       // First, insert into questions table
-      const { data: insertedQuestion, error: insertError } = await supabase
+      const { data: insertedQuestion, error: insertError } = await adminSupabase
         .from('questions')
         .insert([
           {
@@ -104,7 +113,7 @@ export default function AdminPage() {
       }
 
       // Then, delete from submissions table
-      const { error: deleteError } = await supabase
+      const { error: deleteError } = await adminSupabase
         .from('question_submissions')
         .delete()
         .eq('id', submission.id);
@@ -112,7 +121,7 @@ export default function AdminPage() {
       if (deleteError) {
         console.error('Error deleting submission:', deleteError);
         // Try to rollback the question insert
-        await supabase
+        await adminSupabase
           .from('questions')
           .delete()
           .eq('id', insertedQuestion.id);
@@ -130,11 +139,16 @@ export default function AdminPage() {
   };
 
   const handleReject = async (id: string) => {
+    if (!adminSupabase) {
+      setError('Admin client not configured');
+      return;
+    }
+
     try {
       setActionInProgress(id);
       setError('');
 
-      const { error } = await supabase
+      const { error } = await adminSupabase
         .from('question_submissions')
         .delete()
         .eq('id', id);
