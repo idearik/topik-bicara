@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase, isAuthenticated } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 interface Submission {
   id: string;
@@ -20,10 +20,18 @@ export default function AdminPage() {
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isAuthed) {
-      fetchSubmissions();
-    }
-  }, [isAuthed]);
+    // Check for admin session cookie
+    const checkAuth = () => {
+      const cookies = document.cookie.split(';');
+      const adminSession = cookies.find(c => c.trim().startsWith('admin_session='));
+      setIsAuthed(!!adminSession);
+      if (!!adminSession) {
+        fetchSubmissions();
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   const fetchSubmissions = async () => {
     try {
@@ -55,15 +63,9 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
-        // Check if we're authenticated with Supabase
-        const isAuthd = await isAuthenticated();
-        if (!isAuthd) {
-          setError('Not authenticated with database. Please contact administrator.');
-          return;
-        }
-
         setIsAuthed(true);
         setError('');
+        fetchSubmissions();
       } else {
         setError('Invalid password');
       }
@@ -75,13 +77,6 @@ export default function AdminPage() {
 
   const handleApprove = async (submission: Submission) => {
     try {
-      // Check authentication before proceeding
-      const isAuthd = await isAuthenticated();
-      if (!isAuthd) {
-        setError('Not authenticated. Please refresh and log in again.');
-        return;
-      }
-
       setActionInProgress(submission.id);
       setError('');
 
@@ -136,13 +131,6 @@ export default function AdminPage() {
 
   const handleReject = async (id: string) => {
     try {
-      // Check authentication before proceeding
-      const isAuthd = await isAuthenticated();
-      if (!isAuthd) {
-        setError('Not authenticated. Please refresh and log in again.');
-        return;
-      }
-
       setActionInProgress(id);
       setError('');
 
