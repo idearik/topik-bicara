@@ -40,6 +40,7 @@ export default function SubmitQuestionForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    console.log('Submitting question:', { question, topic, authorCredit });
 
     // Validation
     if (!question.trim()) {
@@ -70,7 +71,8 @@ export default function SubmitQuestionForm() {
     setIsSubmitting(true);
 
     try {
-      const { error: submitError } = await supabase
+      console.log('Inserting question into Supabase...');
+      const { data, error: submitError } = await supabase
         .from('question_submissions')
         .insert([
           {
@@ -78,13 +80,20 @@ export default function SubmitQuestionForm() {
             topic,
             author_credit: authorCredit.trim() || null
           }
-        ]);
+        ])
+        .select();
 
       if (submitError) {
-        console.error('Submit error details:', submitError);
+        console.error('Submit error details:', {
+          message: submitError.message,
+          code: submitError.code,
+          details: submitError.details,
+          hint: submitError.hint
+        });
         throw submitError;
       }
 
+      console.log('Question submitted successfully:', data);
       setShowSuccess(true);
       setQuestion('');
       setTopic('');

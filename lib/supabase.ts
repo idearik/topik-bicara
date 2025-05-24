@@ -8,8 +8,16 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Log the URL (but not the key for security)
-console.log('Initializing Supabase client with URL:', supabaseUrl);
+if (!supabaseServiceKey) {
+  console.warn('Warning: SUPABASE_SERVICE_ROLE_KEY is not set. Admin functionality will be limited.');
+}
+
+// Log the URL and client configuration (but not the keys for security)
+console.log('Supabase Configuration:', {
+  url: supabaseUrl,
+  hasAnonKey: !!supabaseAnonKey,
+  hasServiceKey: !!supabaseServiceKey
+});
 
 // Public client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -24,11 +32,19 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 // Admin client with service role (only used in admin routes)
-export const adminSupabase = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
+export const adminSupabase = supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+  : null;
+
+console.log('Supabase Clients Initialized:', {
+  hasPublicClient: !!supabase,
+  hasAdminClient: !!adminSupabase,
+  adminClientHasServiceRole: adminSupabase?.auth.admin !== undefined
 });
 
 // Helper function to check if user is authenticated

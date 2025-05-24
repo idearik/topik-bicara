@@ -43,6 +43,12 @@ export default function AdminPage() {
     }
 
     try {
+      console.log('Admin client config:', {
+        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        isUsingServiceKey: adminSupabase.auth.admin !== undefined
+      });
+      
       console.log('Fetching submissions...');
       const { data, error } = await adminSupabase
         .from('question_submissions')
@@ -59,7 +65,12 @@ export default function AdminPage() {
         throw error;
       }
 
-      console.log('Fetched submissions:', data);
+      console.log('Fetched submissions response:', {
+        hasData: !!data,
+        dataLength: data?.length || 0,
+        firstItem: data?.[0]
+      });
+      
       setSubmissions(data || []);
     } catch (err) {
       console.error('Error fetching submissions:', err);
