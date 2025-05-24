@@ -24,8 +24,10 @@ export default function AdminPage() {
     const checkAuth = () => {
       const cookies = document.cookie.split(';');
       const adminSession = cookies.find(c => c.trim().startsWith('admin_session='));
-      setIsAuthed(!!adminSession);
-      if (!!adminSession) {
+      const isAuthenticated = !!adminSession;
+      console.log('Auth check:', { isAuthenticated, cookies });
+      setIsAuthed(isAuthenticated);
+      if (isAuthenticated) {
         fetchSubmissions();
       }
     };
@@ -35,17 +37,29 @@ export default function AdminPage() {
 
   const fetchSubmissions = async () => {
     if (!adminSupabase) {
+      console.error('Admin client not configured');
       setError('Admin client not configured');
       return;
     }
 
     try {
+      console.log('Fetching submissions...');
       const { data, error } = await adminSupabase
         .from('question_submissions')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching submissions:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
+        throw error;
+      }
+
+      console.log('Fetched submissions:', data);
       setSubmissions(data || []);
     } catch (err) {
       console.error('Error fetching submissions:', err);
