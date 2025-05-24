@@ -94,11 +94,11 @@ export async function getRandomQuestion(topic: string): Promise<Question | null>
   try {
     console.log('Fetching question for topic:', topic);
     
-    const { data: userSubmittedData, error } = await supabase
+    // Get all questions for the topic
+    const { data: questions, error } = await supabase
       .from('questions')
-      .select('*, question_submissions!inner(approved)')
-      .eq('topic', topic)
-      .eq('question_submissions.approved', true);
+      .select('*')
+      .eq('topic', topic);
 
     if (error) {
       console.error('Error fetching questions:', {
@@ -111,23 +111,9 @@ export async function getRandomQuestion(topic: string): Promise<Question | null>
       return null;
     }
 
-    let questions;
-    if (!userSubmittedData || userSubmittedData.length === 0) {
-      // Try fetching without the join to get non-user-submitted questions
-      const { data: regularData, error: regularError } = await supabase
-        .from('questions')
-        .select('*')
-        .eq('topic', topic);
-
-      if (regularError || !regularData || regularData.length === 0) {
-        console.log('No questions found for topic:', topic);
-        return null;
-      }
-
-      questions = regularData.map(q => ({ ...q, is_user_submitted: false }));
-    } else {
-      // Mark questions as user submitted
-      questions = userSubmittedData.map(q => ({ ...q, is_user_submitted: true }));
+    if (!questions || questions.length === 0) {
+      console.log('No questions found for topic:', topic);
+      return null;
     }
 
     // Get shown questions for this topic
