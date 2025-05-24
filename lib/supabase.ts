@@ -24,14 +24,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 // Admin client with service role (only used in admin routes)
-export const adminSupabase = supabaseServiceKey 
-  ? createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
-  : null;
+export const adminSupabase = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
 // Helper function to check if user is authenticated
 export const isAuthenticated = async () => {

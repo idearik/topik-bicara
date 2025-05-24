@@ -76,12 +76,14 @@ export default function SubmitQuestionForm() {
           {
             question: question.trim(),
             topic,
-            approved: false,
             author_credit: authorCredit.trim() || null
           }
         ]);
 
-      if (submitError) throw submitError;
+      if (submitError) {
+        console.error('Submit error details:', submitError);
+        throw submitError;
+      }
 
       setShowSuccess(true);
       setQuestion('');
@@ -93,8 +95,8 @@ export default function SubmitQuestionForm() {
         setShowSuccess(false);
       }, 5000);
     } catch (err) {
-      setError('Gagal mengirim pertanyaan. Silakan coba lagi.');
       console.error('Submit error:', err);
+      setError('Gagal mengirim pertanyaan. Silakan coba lagi.');
     } finally {
       setIsSubmitting(false);
     }
