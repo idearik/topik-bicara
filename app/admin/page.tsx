@@ -36,9 +36,16 @@ export default function AdminPage() {
   }, []);
 
   const fetchSubmissions = async () => {
+    console.log('Starting fetchSubmissions...');
+    
     if (!adminSupabase) {
-      console.error('Admin client not configured');
-      setError('Admin client not configured');
+      const error = 'Admin client not configured';
+      console.error(error, {
+        hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        serviceKeyPrefix: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 4) || 'not-set',
+        environment: process.env.NODE_ENV
+      });
+      setError(error);
       return;
     }
 
@@ -46,7 +53,8 @@ export default function AdminPage() {
       console.log('Admin client config:', {
         url: process.env.NEXT_PUBLIC_SUPABASE_URL,
         hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-        isUsingServiceKey: adminSupabase.auth.admin !== undefined
+        isUsingServiceKey: adminSupabase.auth.admin !== undefined,
+        role: await adminSupabase.auth.getUser().then(res => res.data.user?.role).catch(() => 'error-getting-role')
       });
       
       console.log('Fetching submissions...');
@@ -74,7 +82,7 @@ export default function AdminPage() {
       setSubmissions(data || []);
     } catch (err) {
       console.error('Error fetching submissions:', err);
-      setError('Failed to load submissions');
+      setError(err instanceof Error ? err.message : 'Failed to load submissions');
     } finally {
       setLoading(false);
     }
