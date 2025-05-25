@@ -1,21 +1,17 @@
-import type { NextRequest } from 'next/server'
+import { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { adminSupabase } from '@/lib/supabase';
 
-interface RouteParams {
-  id: string;
-}
-
 export async function POST(
   request: NextRequest,
-  { params }: { params: RouteParams }
-): Promise<Response> {
+) {
   try {
-    const { id } = params;
+    // Get id from URL
+    const id = request.nextUrl.pathname.split('/').pop();
 
     // Check for admin session
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const adminSession = cookieStore.get('admin_session');
     
     if (!adminSession?.value) {
