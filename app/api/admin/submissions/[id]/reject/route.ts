@@ -7,8 +7,9 @@ export async function POST(
   request: NextRequest,
 ) {
   try {
-    // Get id from URL
-    const id = request.nextUrl.pathname.split('/').pop();
+    // Get id from URL - get the second to last segment which is the actual ID
+    const pathParts = request.nextUrl.pathname.split('/');
+    const id = pathParts[pathParts.length - 2];
 
     // Check for admin session
     const cookieStore = await cookies();
