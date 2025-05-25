@@ -86,52 +86,17 @@ export default function AdminPage() {
   };
 
   const handleApprove = async (submission: Submission) => {
-    if (!adminSupabase) {
-      setError('Admin client not configured');
-      return;
-    }
-
     try {
       setActionInProgress(submission.id);
       setError('');
 
-      // First, insert into questions table
-      const { data: insertedQuestion, error: insertError } = await adminSupabase
-        .from('questions')
-        .insert([
-          {
-            question: submission.question,
-            topic: submission.topic,
-            is_user_submitted: true,
-            author_credit: submission.author_credit
-          }
-        ])
-        .select()
-        .single();
+      const response = await fetch(`/api/admin/submissions/${submission.id}/approve`, {
+        method: 'POST'
+      });
+      const result = await response.json();
 
-      if (insertError) {
-        console.error('Error inserting into questions:', insertError);
-        throw new Error(insertError.message || 'Failed to add question');
-      }
-
-      if (!insertedQuestion) {
-        throw new Error('Failed to add question - no data returned');
-      }
-
-      // Then, delete from submissions table
-      const { error: deleteError } = await adminSupabase
-        .from('question_submissions')
-        .delete()
-        .eq('id', submission.id);
-
-      if (deleteError) {
-        console.error('Error deleting submission:', deleteError);
-        // Try to rollback the question insert
-        await adminSupabase
-          .from('questions')
-          .delete()
-          .eq('id', insertedQuestion.id);
-        throw new Error(deleteError.message || 'Failed to delete submission');
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to approve submission');
       }
 
       // Refresh the submissions list
@@ -145,23 +110,17 @@ export default function AdminPage() {
   };
 
   const handleReject = async (id: string) => {
-    if (!adminSupabase) {
-      setError('Admin client not configured');
-      return;
-    }
-
     try {
       setActionInProgress(id);
       setError('');
 
-      const { error } = await adminSupabase
-        .from('question_submissions')
-        .delete()
-        .eq('id', id);
+      const response = await fetch(`/api/admin/submissions/${id}/reject`, {
+        method: 'POST'
+      });
+      const result = await response.json();
 
-      if (error) {
-        console.error('Error deleting submission:', error);
-        throw error;
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to reject submission');
       }
 
       // Refresh the submissions list
