@@ -2,18 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { adminSupabase } from '@/lib/supabase';
 
-interface RouteSegmentConfig {
+type Props = {
   params: {
     id: string;
   };
-}
+};
 
 export async function POST(
   req: NextRequest,
-  { params }: RouteSegmentConfig
+  props: Props
 ): Promise<NextResponse> {
   try {
-    const { id } = params;
+    const { id } = props.params;
     
     // Check for admin session
     const cookieStore = await cookies();
