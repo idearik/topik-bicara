@@ -38,48 +38,21 @@ export default function AdminPage() {
   const fetchSubmissions = async () => {
     console.log('Starting fetchSubmissions...');
     
-    if (!adminSupabase) {
-      const error = 'Admin client not configured';
-      console.error(error, {
-        hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-        serviceKeyPrefix: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 4) || 'not-set',
-        environment: process.env.NODE_ENV
-      });
-      setError(error);
-      return;
-    }
-
     try {
-      console.log('Admin client config:', {
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-        isUsingServiceKey: adminSupabase.auth.admin !== undefined,
-        role: await adminSupabase.auth.getUser().then(res => res.data.user?.role).catch(() => 'error-getting-role')
-      });
+      const response = await fetch('/api/admin/submissions');
+      const result = await response.json();
       
-      console.log('Fetching submissions...');
-      const { data, error } = await adminSupabase
-        .from('question_submissions')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching submissions:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint
-        });
-        throw error;
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch submissions');
       }
 
       console.log('Fetched submissions response:', {
-        hasData: !!data,
-        dataLength: data?.length || 0,
-        firstItem: data?.[0]
+        hasData: !!result.data,
+        dataLength: result.data?.length || 0,
+        firstItem: result.data?.[0]
       });
       
-      setSubmissions(data || []);
+      setSubmissions(result.data || []);
     } catch (err) {
       console.error('Error fetching submissions:', err);
       setError(err instanceof Error ? err.message : 'Failed to load submissions');
