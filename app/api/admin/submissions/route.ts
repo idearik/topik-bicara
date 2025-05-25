@@ -5,7 +5,8 @@ import { adminSupabase } from '@/lib/supabase';
 export async function GET() {
   try {
     // Check for admin session
-    const adminSession = cookies().get('admin_session');
+    const cookieStore = await cookies();
+    const adminSession = cookieStore.get('admin_session');
     
     if (!adminSession?.value) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
