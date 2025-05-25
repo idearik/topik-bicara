@@ -11,7 +11,7 @@ export async function POST(
     const id = request.nextUrl.pathname.split('/').pop();
 
     // Check for admin session
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const adminSession = cookieStore.get('admin_session');
     
     if (!adminSession?.value) {
