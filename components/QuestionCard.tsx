@@ -78,14 +78,6 @@ export default function QuestionCard({
           >
             <div className="bg-white p-8 rounded-xl shadow-lg">
               <div className="relative">
-                {question.is_user_submitted && (
-                  <div className="absolute -top-2 -right-2 bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full border border-purple-400">
-                    ✨ User Submitted
-                    {question.author_credit && (
-                      <span className="ml-1">by {question.author_credit}</span>
-                    )}
-                  </div>
-                )}
                 <h2 className="text-xl md:text-2xl font-semibold mb-8 text-gray-800">
                   {question.question}
                 </h2>
@@ -108,6 +100,16 @@ export default function QuestionCard({
 
               <div className="mt-8">
                 <ProgressBar current={currentQuestion} total={totalQuestions} />
+                {question.is_user_submitted && (
+                  <div className="mt-4 text-center">
+                    <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full border border-purple-400">
+                      Question Submitted
+                      {question.author_credit && (
+                        <span className="ml-1">by {question.author_credit}</span>
+                      )}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
