@@ -3,12 +3,16 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { adminSupabase } from '@/lib/supabase';
 
+interface RouteParams {
+  id: string;
+}
+
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: RouteParams }
 ): Promise<Response> {
   try {
-    const { id } = context.params;
+    const { id } = params;
 
     // Check for admin session
     const cookieStore = await cookies();
