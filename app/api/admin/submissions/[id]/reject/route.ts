@@ -2,11 +2,19 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { adminSupabase } from '@/lib/supabase';
 
+type RouteContext = {
+  params: {
+    id: string;
+  };
+};
+
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
+    const { id } = context.params;
+
     // Check for admin session
     const cookieStore = await cookies();
     const adminSession = cookieStore.get('admin_session');
@@ -27,7 +35,7 @@ export async function POST(
     const { error: deleteError } = await adminSupabase
       .from('question_submissions')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (deleteError) {
       console.error('Error deleting submission:', deleteError);
