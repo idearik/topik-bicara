@@ -1,15 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { adminSupabase } from '@/lib/supabase';
 
-type Context = {
-  params: { id: string }
-}
-
 export async function POST(
   request: NextRequest,
-  context: Context
-): Promise<NextResponse> {
+  context: { params: { id: string } }
+): Promise<Response> {
   try {
     const { id } = context.params;
 
