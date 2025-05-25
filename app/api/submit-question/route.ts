@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { adminSupabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
@@ -15,8 +15,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Topic is required' }, { status: 400 });
     }
 
-    // Insert the submission
-    const { data, error } = await supabase
+    if (!adminSupabase) {
+      console.error('Admin client not configured', {
+        hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        serviceKeyPrefix: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 4) || 'not-set'
+      });
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
+    // Insert the submission using admin client
+    const { data, error } = await adminSupabase
       .from('question_submissions')
       .insert([
         {

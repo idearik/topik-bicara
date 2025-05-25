@@ -71,9 +71,8 @@ export default function SubmitQuestionForm() {
     setIsSubmitting(true);
 
     try {
-      console.log('Inserting question into Supabase...');
+      console.log('Submitting question...');
       
-      // Submit through API route instead of direct Supabase client
       const response = await fetch('/api/submit-question', {
         method: 'POST',
         headers: {
@@ -86,12 +85,14 @@ export default function SubmitQuestionForm() {
         }),
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to submit question');
+        console.error('Submit error details:', result);
+        throw new Error(result.error || 'Failed to submit question');
       }
 
-      console.log('Question submitted successfully');
+      console.log('Question submitted successfully:', result);
       setShowSuccess(true);
       setQuestion('');
       setTopic('');
@@ -103,7 +104,7 @@ export default function SubmitQuestionForm() {
       }, 5000);
     } catch (err) {
       console.error('Submit error:', err);
-      setError('Gagal mengirim pertanyaan. Silakan coba lagi.');
+      setError('Gagal mengirim pertanyaan. Silakan coba lagi dalam beberapa saat.');
     } finally {
       setIsSubmitting(false);
     }
