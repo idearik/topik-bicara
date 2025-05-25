@@ -1,10 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { adminSupabase } from '@/lib/supabase';
 
+interface RouteSegmentConfig {
+  params: {
+    id: string;
+  };
+}
+
 export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: RouteSegmentConfig
 ): Promise<NextResponse> {
   try {
     const { id } = params;
