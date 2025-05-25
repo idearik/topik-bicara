@@ -72,28 +72,26 @@ export default function SubmitQuestionForm() {
 
     try {
       console.log('Inserting question into Supabase...');
-      const { data, error: submitError } = await supabase
-        .from('question_submissions')
-        .insert([
-          {
-            question: question.trim(),
-            topic,
-            author_credit: authorCredit.trim() || null
-          }
-        ])
-        .select();
+      
+      // Submit through API route instead of direct Supabase client
+      const response = await fetch('/api/submit-question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: question.trim(),
+          topic,
+          author_credit: authorCredit.trim() || null
+        }),
+      });
 
-      if (submitError) {
-        console.error('Submit error details:', {
-          message: submitError.message,
-          code: submitError.code,
-          details: submitError.details,
-          hint: submitError.hint
-        });
-        throw submitError;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to submit question');
       }
 
-      console.log('Question submitted successfully:', data);
+      console.log('Question submitted successfully');
       setShowSuccess(true);
       setQuestion('');
       setTopic('');
